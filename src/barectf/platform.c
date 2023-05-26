@@ -20,6 +20,10 @@
 # define _FROM_VOID_PTR(_type, _value)	((_type *) (_value))
 #endif
 
+/* --------------------- Forward declarations */
+
+int _write(int fd, char* data, size_t len);
+
 
 /* --------------------- Data types */
 
@@ -47,6 +51,7 @@ struct Pico_Trace_Platform_Ctx* pico_trace_private_instance_get(void)
 static uint64_t pico_trace_private_clock_get(void* const data)
 {
 	struct Pico_Trace_Platform_Ctx *platform = _FROM_VOID_PTR(struct Pico_Trace_Platform_Ctx, data);
+	(void)platform; /* Unused in this function */
 
 	absolute_time_t now = get_absolute_time();
 	uint64_t now_us = to_us_since_boot(now);
@@ -73,7 +78,7 @@ static void pico_trace_private_packet_close(void* const data)
 
 	/* Write the packet */
 	_write(STDIO_HANDLE_STDOUT,
-		barectf_packet_buf(&platform->barectf_ctx),
+		(char*)barectf_packet_buf(&platform->barectf_ctx),
 		barectf_packet_buf_size(&platform->barectf_ctx)
 	);
 	stdio_flush();
