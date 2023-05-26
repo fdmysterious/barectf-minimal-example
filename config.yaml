@@ -1,0 +1,24 @@
+%YAML 1.2
+--- !<tag:barectf.org,2020/3/config>
+trace:
+  type:
+    native-byte-order: little-endian
+    $include:
+      - stdint.yaml
+      - stdreal.yaml
+      - stdmisc.yaml
+      - lttng-ust-log-levels.yaml
+    clock-types:
+      default:
+        $c-type: uint64_t
+    data-stream-types:
+      default:
+        $is-default: true
+        $default-clock-type-name: default
+        event-record-types:
+          simple_uint32:
+            log-level: CRIT
+            payload-field-type:
+              class: structure
+              members:
+                - value: uint32

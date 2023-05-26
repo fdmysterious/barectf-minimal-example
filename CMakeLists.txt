@@ -18,6 +18,9 @@ pico_sdk_init()
 # Set compile options
 add_compile_options(-Wall)
 add_executable(blink
+	src/barectf/barectf.c
+	src/barectf/platform.c
+
 	src/main.c
 )
 
