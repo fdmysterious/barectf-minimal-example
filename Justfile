@@ -1,5 +1,7 @@
-image_name   := env_var_or_default("IMAGE_NAME", "rp-pico-sdk")
-project_name := "blink"
+image_name           := env_var_or_default("IMAGE_NAME", "rp-pico-sdk")
+openocd_image_name   := env_var_or_default("IMAGE_NAME_OPENOCD",   "openocd-rp_pico" )
+
+project_name         := "blink"
 
 # https://stackoverflow.com/questions/23513045/how-to-check-if-a-process-is-running-inside-docker-container
 is_in_docker := `test -f /.dockerenv && echo 1 || echo 0`
@@ -7,6 +9,11 @@ is_in_docker := `test -f /.dockerenv && echo 1 || echo 0`
 # run_cmd is the docker run command used to launch your env.
 run_cmd := if is_in_docker == "0" {
     'docker run -it --rm --mount type=bind,src="$(pwd)",target="/home/dev/project" -w /home/dev/project ' + image_name
+} else {""}
+
+
+run_cmd_openocd := if is_in_docker == "0" {
+    'docker run -it --privileged --rm --mount type=bind,src="$(pwd)",target="/project" -w /project ' + openocd_image_name
 } else {""}
 
 #################
@@ -25,7 +32,7 @@ build-docker force="no": ensure-folders
     if [ {{is_in_docker}} -eq 1 ] ; then
         echo "Running in docker container, skipping image generation !"
     else
-        if [ -z `docker image ls {{image_name}} --format '1'`] || [ {{force}} = "force" ] ; then
+        if [ -z `docker image ls {{image_name}} --format '1'` ] || [ {{force}} = "force" ] ; then
             [ {{force}} = "force" ] && echo "Forcing build"
             docker buildx build --load -t {{image_name}} -f Dockerfile .
         fi
@@ -50,3 +57,7 @@ flash: build
 
 clean:
 	rm -r build
+
+# Generate barectf files
+barectf:
+    barectf gen --code-dir=./src/barectf --headers-dir=./src/barectf --metadata-dir=. config.yaml
